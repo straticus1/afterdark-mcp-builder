@@ -6,7 +6,8 @@
   "author": "Unified MCP Team",
   "type": "module",
   "bin": {
-    "unified-mcp-server": "dist/index.js"
+    "unified-mcp-server": "dist/index.js",
+    "unified-mcp-http": "dist/http-server.js"
   },
   "files": [
     "dist"
@@ -16,6 +17,13 @@
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
+    "start:http": "node dist/http-server.js",
+    "start:dev": "tsc && node dist/http-server.js",
+    "dev": "tsc --watch & node --watch dist/http-server.js",
+    "docker:build": "docker build -t unified-mcp-server .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts"

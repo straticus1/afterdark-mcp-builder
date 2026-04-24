@@ -1,0 +1,28 @@
+# Copy this file to terraform.tfvars and fill in your values
+# cp terraform.tfvars.example terraform.tfvars
+
+# AWS Configuration
+aws_region = "us-east-1"  # Cheapest region
+environment = "production"
+
+# EC2 Instance
+instance_type = "t4g.nano"  # Cheapest option: ~$3/month ARM-based
+key_pair_name = "mcp-server-key"  # Create this key pair in AWS first
+
+# Security - IMPORTANT: Change this to your IP!
+ssh_allowed_ips = ["YOUR_IP/32"]  # Replace with your IP for security
+mcp_allowed_ips = ["0.0.0.0/0"]   # Allow all (Nginx handles access control)
+
+# Domain Configuration
+domain_name = "mcp.afterdarksys.com"
+root_domain = "afterdarksys.com"
+
+# Route 53 (set to true if domain is in Route 53)
+create_route53_records = false  # Set to true if you manage DNS in Route 53
+
+# MCP Server Configuration
+mcp_api_key = "your-super-secret-api-key-here"  # CHANGE THIS!
+
+# Monitoring (optional)
+alarm_sns_topic_arn = ""  # SNS topic for alerts (optional)
+enable_monitoring = false  # Set to true for detailed monitoring (+$2.10/month)

@@ -1,0 +1,38 @@
+[Unit]
+Description=Unified MCP Server
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ec2-user
+Group=ec2-user
+WorkingDirectory={{ app_dir }}
+EnvironmentFile={{ app_dir }}/.env
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=0
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mcp-server
+
+# Start the service
+ExecStartPre=/bin/sleep 5
+ExecStartPre=-/usr/local/bin/docker-compose down
+ExecStart=/usr/local/bin/docker-compose up --remove-orphans
+
+# Stop the service
+ExecStop=/usr/local/bin/docker-compose down
+TimeoutStopSec=30
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

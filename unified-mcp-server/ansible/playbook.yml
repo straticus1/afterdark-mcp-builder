@@ -1,0 +1,180 @@
+---
+- name: Configure Unified MCP Server on AWS
+  hosts: mcp_server
+  become: yes
+  vars:
+    domain_name: "{{ lookup('env', 'DOMAIN_NAME') | default('mcp.afterdarksys.com', true) }}"
+    api_key: "{{ lookup('env', 'MCP_API_KEY') | default('', true) }}"
+    letsencrypt_email: "{{ lookup('env', 'LETSENCRYPT_EMAIL') | default('admin@afterdarksys.com', true) }}"
+    docker_image: "unified-mcp-server:latest"
+    app_dir: "/opt/mcp-server"
+
+  tasks:
+    - name: Update all packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: Install required packages
+      dnf:
+        name:
+          - docker
+          - git
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+          - python3-pip
+          - amazon-cloudwatch-agent
+        state: present
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/latest/download/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Create workspace directory
+      file:
+        path: "{{ app_dir }}/workspace"
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Copy Docker Compose file
+      copy:
+        src: ../docker-compose.yml
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+
+    - name: Create .env file
+      template:
+        src: templates/env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: ec2-user
+        group: ec2-user
+        mode: '0600'
+
+    - name: Configure Nginx
+      template:
+        src: templates/nginx-mcp.conf.j2
+        dest: /etc/nginx/conf.d/mcp-server.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Obtain Let's Encrypt SSL certificate
+      command: >
+        certbot --nginx
+        --non-interactive
+        --agree-tos
+        --email {{ letsencrypt_email }}
+        --domains {{ domain_name }}
+        --redirect
+      args:
+        creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
+      notify: Reload Nginx
+
+    - name: Set up auto-renewal for Let's Encrypt
+      cron:
+        name: "Renew Let's Encrypt certificates"
+        minute: "0"
+        hour: "*/12"
+        job: "certbot renew --quiet --post-hook 'systemctl reload nginx'"
+
+    - name: Pull Docker image
+      docker_image:
+        name: "{{ docker_image }}"
+        source: pull
+      become_user: ec2-user
+      ignore_errors: yes  # May not exist in registry yet
+
+    - name: Create systemd service for MCP server
+      template:
+        src: templates/mcp-server.service.j2
+        dest: /etc/systemd/system/mcp-server.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Start and enable MCP server
+      systemd:
+        name: mcp-server
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Configure firewall (if firewalld is installed)
+      block:
+        - name: Allow HTTP
+          firewalld:
+            service: http
+            permanent: yes
+            state: enabled
+
+        - name: Allow HTTPS
+          firewalld:
+            service: https
+            permanent: yes
+            state: enabled
+
+        - name: Reload firewalld
+          command: firewall-cmd --reload
+      when: ansible_facts.services['firewalld.service'] is defined
+      ignore_errors: yes
+
+    - name: Wait for MCP server to start
+      wait_for:
+        port: 3000
+        delay: 5
+        timeout: 60
+
+    - name: Test MCP server health
+      uri:
+        url: "http://localhost:3000/health"
+        return_content: yes
+      register: health_check
+
+    - name: Display health check result
+      debug:
+        msg: "MCP Server is healthy: {{ health_check.json }}"
+
+  handlers:
+    - name: Reload Nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
