@@ -1,195 +1,69 @@
 # AfterDark MCP Builder
 
-A comprehensive MCP (Model Context Protocol) server builder and integration toolkit developed by After Dark Systems.
+AfterDark MCP Builder is becoming a local plugin manager and unified gateway for
+[Model Context Protocol](https://modelcontextprotocol.io) servers.
 
-## Overview
+Third-party server source does not live in this repository. A curated catalog
+records projects we consider useful; supported entries will be downloaded into
+a managed cache, configured, supervised as isolated processes, and exposed
+through one namespaced MCP endpoint.
 
-AfterDark MCP Builder is a unified development environment for creating, integrating, and managing multiple MCP servers. This project consolidates capabilities from 8+ different MCP servers into a single, powerful, and modular solution.
+## Current state
 
-## Project Structure
+This is an active reconstruction, not a production release. The first complete
+plugin path is working end to end.
 
-This repository contains multiple MCP server implementations and a unified framework:
+- `packages/manager` contains catalog discovery, a typed npm installer, integrity
+  lockfile, registry management, process supervision, and the unified proxy.
+- `packages/gateway` contains the legacy in-process unified server. It is being
+  retained as migration material and is not yet the target proxy architecture.
+- `catalog` contains pinned provenance for the initial set of interesting MCP
+  projects. Entries are candidates until they have a tested installer and
+  runtime definition.
+- `docs/architecture.md` defines the target boundaries and lifecycle.
 
-```
-afterdark-mcp-builder/
-├── awesome-mcp-servers/          # Curated MCP server collection
-├── chrome-devtools-mcp/          # Browser debugging capabilities
-├── claude-flow/                  # Claude integration flows
-├── context7/                     # Documentation access tools
-├── desktopcommandermcp/          # Terminal automation server
-├── dwilcox-universal-agent-mcp-kit/  # Base framework (private)
-├── fonoster/                     # Telephony platform integration
-├── gpt-researcher/               # Research automation tools
-├── mcp-chrome/                   # Chrome browser automation
-├── mcp-servers/                  # Official MCP server implementations
-├── openmetadata/                 # Data catalog integration
-├── unified-mcp-server/           # Consolidated unified server (private)
-├── universal-agent-mcp-kit/      # Symlink to base framework
-├── zen-mcp-server/              # Zen productivity server
-├── AFTERDARK_SYSTEMS_OVERHUAL_V1.md  # Technical documentation
-├── CHANGELOG.md                  # Version history
-└── README.md                     # This file
-```
-
-## Key Features
-
-### 🚀 **Unified Server Architecture**
-- **60+ Tools**: Consolidated capabilities from multiple MCP servers
-- **Modular Design**: Load only the modules you need
-- **Security-First**: Comprehensive validation and protection mechanisms
-- **Performance Optimized**: Concurrent execution and intelligent caching
-
-### 🔧 **Core Capabilities**
-- **File Operations**: Advanced file system management (11 tools)
-- **Memory Management**: Knowledge graph and entity management (9 tools)
-- **Terminal Control**: Process and command automation (15+ tools)
-- **Browser Automation**: Chrome control and DOM manipulation (25+ tools)
-- **Documentation**: Context-aware documentation access (2 tools)
-- **Testing**: MCP protocol testing and validation (12+ tools)
-
-### 🛡️ **Security Framework**
-- Path traversal protection
-- File extension validation
-- File size limits (configurable)
-- Command timeout controls
-- Allowed path restrictions
-
-## Quick Start
-
-### Prerequisites
-- Node.js >= 18.0.0
-- TypeScript >= 5.8.2
-- Chrome/Chromium (for browser automation)
-
-### Installation
+## Working vertical slice
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd afterdark-mcp-builder
-
-# Install dependencies for each component
-npm install
-
-# Build the unified server
-npm run build
+mcp-builder catalog documentation
+mcp-builder add context7 --enable --yes
+mcp-builder serve                # MCP over stdio
+mcp-builder serve --http         # http://127.0.0.1:3737/mcp
+mcp-builder daemon start         # detached local HTTP gateway
+mcp-builder status
 ```
 
-### Basic Configuration
+The `serve` command starts enabled third-party servers, discovers their MCP
+tools, namespaces them as `<plugin>__<tool>`, and routes calls to the owning
+process. Context7 is the first supported catalog entry; other entries remain
+candidates until they receive tested install and launch definitions.
 
-Create a configuration file:
-
-```json
-{
-  "server": "unified-mcp-server",
-  "modules": ["filesystem", "memory", "terminal"],
-  "security": {
-    "allowedPaths": ["/workspace"],
-    "maxFileSize": "10MB",
-    "commandTimeout": 30000
-  }
-}
-```
-
-### Running the Server
-
-```bash
-# Start the unified MCP server
-npm start
-
-# Or run specific modules
-npm run start:filesystem
-npm run start:browser
-```
-
-## Architecture
-
-The AfterDark MCP Builder uses a "frankenstein methodology" - strategically extracting and integrating components from existing MCP servers:
-
-### Base Framework
-- **dwilcox-universal-agent-mcp-kit**: Core architectural foundation
-- **Universal Agent Patterns**: Modular design and agent management
-
-### Integrated Components
-- **Official Anthropic Servers**: filesystem, memory, everything servers
-- **Third-Party Servers**: desktop-commander, chrome automation, documentation tools
-- **Custom Extensions**: Enhanced security, performance optimizations
-
-## Performance Metrics
-
-- **Startup Time**: < 2 seconds
-- **Memory Usage**: ~50MB base + loaded modules
-- **Tool Response Time**: < 100ms average
-- **Concurrent Operations**: 50+ simultaneous tools
+Downloaded packages are stored outside the repository in the managed cache.
+Set `MCP_BUILDER_CACHE` to override its location. The resolved version,
+integrity, executable, and installation location are recorded alongside the
+registry in `.agent/mcp-builder.lock.json`.
 
 ## Development
 
-### Building from Source
+Node.js 20 or newer is required.
 
 ```bash
-# Install dependencies
 npm install
-
-# Build all components
 npm run build
-
-# Run tests
-npm test
-
-# Development mode with hot reload
-npm run dev
+npm run typecheck
 ```
 
-### Adding New Modules
+These commands describe the intended reproducible path. During reconstruction,
+individual packages may still fail and should be treated as work to complete,
+not as a documented success.
 
-1. Create module directory in `unified-mcp-server/src/modules/`
-2. Implement module interface
-3. Register module in main server configuration
-4. Update documentation and tests
+## Security direction
 
-## Security Considerations
+Installers will be typed adapters rather than arbitrary catalog shell commands.
+Resolved versions and integrity data belong in a lockfile. Secrets never belong
+in the catalog. Plugins that request filesystem, process, Docker, cloud, or
+network-capture access must declare those permissions and receive explicit user
+approval.
 
-This toolkit handles sensitive operations including:
-- File system access
-- Terminal command execution
-- Browser automation
-- Network requests
-
-Always review and configure security settings appropriate for your environment.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## License
-
-This project is developed by After Dark Systems. See individual component licenses for specific terms.
-
-## Support
-
-For technical support and questions:
-- **Project Lead**: Ryan Coleman (After Dark Systems)
-- **Documentation**: See `AFTERDARK_SYSTEMS_OVERHUAL_V1.md`
-- **Issues**: Report via GitHub Issues
-
-## Roadmap
-
-### Phase 2 Enhancements
-- WebSocket transport optimization
-- Advanced caching strategies
-- Plugin architecture for custom modules
-- Distributed deployment capabilities
-
-### Phase 3 Expansion
-- AI-powered tool orchestration
-- Advanced analytics and reporting
-- Integration with After Dark Systems platform
-- Enterprise security and compliance features
-
----
-
-**After Dark Systems** - Leading innovation in AI agent infrastructure and MCP server technology.
+The HTTP gateway is currently unauthenticated and therefore refuses to bind to
+anything except a loopback address.

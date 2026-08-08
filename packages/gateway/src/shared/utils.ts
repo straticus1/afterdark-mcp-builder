@@ -29,9 +29,14 @@ export function validatePath(filePath: string, allowedPaths?: string[]): string 
 
   // Check against allowed paths if provided
   if (allowedPaths && allowedPaths.length > 0) {
-    const isAllowed = allowedPaths.some(allowedPath =>
-      normalizedPath.startsWith(path.resolve(allowedPath))
-    );
+    const isAllowed = allowedPaths.some(allowedPath => {
+      const relative = path.relative(path.resolve(allowedPath), normalizedPath);
+      return relative === '' || (
+        relative !== '..' &&
+        !relative.startsWith(`..${path.sep}`) &&
+        !path.isAbsolute(relative)
+      );
+    });
     if (!isAllowed) {
       throw new SecurityError(`Access denied to path: ${normalizedPath}`);
     }

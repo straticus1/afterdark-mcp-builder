@@ -91,3 +91,9 @@ temp/
 # Cache directories
 .cache/
 .parcel-cache/
+
+# MCP Builder managed runtime state
+.mcp-builder/cache/
+.mcp-builder/logs/
+.mcp-builder/pids/
+.mcp-builder/secrets/
