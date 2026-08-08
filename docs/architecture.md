@@ -4,6 +4,10 @@ AfterDark MCP Builder is a modular monolith with ports and adapters around
 third-party package managers and MCP transports. Third-party plugins always run
 outside the gateway process.
 
+For regulated deployments this local architecture is the endpoint data plane.
+The connected importer, review workflow, signed OCI registry, and TUF metadata
+form a separate control plane. See ADR 0001 and the threat model.
+
 ```mermaid
 flowchart LR
   Client[AI client] --> Gateway[Unified MCP gateway]

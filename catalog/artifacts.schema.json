@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://afterdarksys.com/schemas/regulated-artifact-v1.json",
+  "title": "AfterDark regulated AI artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "id", "kind", "version", "state", "source", "artifact", "security"],
+  "properties": {
+    "apiVersion": { "const": "afterdark.dev/v1alpha1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "kind": { "enum": ["mcp", "skill"] },
+    "version": { "type": "string", "minLength": 1 },
+    "state": { "enum": ["candidate", "approved", "revoked", "deprecated"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "url", "revision"],
+      "properties": {
+        "type": { "enum": ["git", "npm", "pypi", "oci"] },
+        "url": { "type": "string", "format": "uri" },
+        "revision": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ociRef", "digest", "mediaType", "size"],
+      "properties": {
+        "ociRef": { "type": "string", "minLength": 1 },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "mediaType": { "type": "string", "pattern": "^application/vnd\\.afterdark\\." },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signatureRequired", "provenanceRequired", "auditVerdict", "permissions"],
+      "properties": {
+        "signatureRequired": { "const": true },
+        "provenanceRequired": { "const": true },
+        "auditVerdict": { "enum": ["pass", "exception-approved"] },
+        "permissions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": { "enum": ["codex", "claude", "openclaw", "generic"] },
+      "uniqueItems": true
+    }
+  }
+}
