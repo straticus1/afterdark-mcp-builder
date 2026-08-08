@@ -1,12 +1,13 @@
 # AfterDark MCP Builder
 
-AfterDark MCP Builder is becoming a local plugin manager and unified gateway for
-[Model Context Protocol](https://modelcontextprotocol.io) servers.
+AfterDark MCP Builder is becoming a regulated distribution and enforcement
+platform for [Model Context Protocol](https://modelcontextprotocol.io) servers
+and agent skills.
 
-Third-party server source does not live in this repository. A curated catalog
-records projects we consider useful; supported entries will be downloaded into
-a managed cache, configured, supervised as isolated processes, and exposed
-through one namespaced MCP endpoint.
+Third-party source does not live in this repository. A connected control plane
+imports explicitly approved revisions, audits them, produces signed immutable
+artifacts, and promotes them to an internal registry. Restricted clients install
+only approved digests from that registry.
 
 ## Current state
 
@@ -20,7 +21,12 @@ plugin path is working end to end.
 - `catalog` contains pinned provenance for the initial set of interesting MCP
   projects. Entries are candidates until they have a tested installer and
   runtime definition.
+- `catalog/skills.json` registers installed Claude and Codex skills as intake
+  candidates with content digests and static-audit results. Candidate intake
+  never implies endpoint execution approval.
 - `docs/architecture.md` defines the target boundaries and lifecycle.
+- `docs/adr/0001-regulated-artifact-distribution.md` defines the control-plane,
+  restricted-client, signing, and enforcement decision.
 
 ## Working vertical slice
 
@@ -31,6 +37,8 @@ mcp-builder serve                # MCP over stdio
 mcp-builder serve --http         # http://127.0.0.1:3737/mcp
 mcp-builder daemon start         # detached local HTTP gateway
 mcp-builder status
+mcp-builder skills inventory
+npm run catalog:skills
 ```
 
 The `serve` command starts enabled third-party servers, discovers their MCP
@@ -42,6 +50,10 @@ Downloaded packages are stored outside the repository in the managed cache.
 Set `MCP_BUILDER_CACHE` to override its location. The resolved version,
 integrity, executable, and installation location are recorded alongside the
 registry in `.agent/mcp-builder.lock.json`.
+
+The current direct npm path is a development/control-plane prototype. It will
+not be part of the restricted endpoint agent; production clients will pull only
+signed internal OCI artifacts by digest.
 
 ## Development
 
@@ -67,3 +79,10 @@ approval.
 
 The HTTP gateway is currently unauthenticated and therefore refuses to bind to
 anything except a loopback address.
+
+## Regulated deployment invariant
+
+The endpoint agent treats all locally discovered skills without a verified
+platform receipt as unmanaged. Hard enforcement also requires OS-managed skill
+roots, client configuration policy, application control, and network egress
+policy; a user-space CLI cannot provide that guarantee by itself.

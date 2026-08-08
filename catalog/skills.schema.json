@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://afterdarksys.com/schemas/skill-candidate-catalog-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "auditTool", "summary", "skills"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "auditTool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "digest"],
+      "properties": {
+        "name": { "const": "skill-security-auditor" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uniqueCandidates", "installedOccurrences", "pass", "warn", "fail", "error"],
+      "properties": {
+        "uniqueCandidates": { "type": "integer", "minimum": 0 },
+        "installedOccurrences": { "type": "integer", "minimum": 0 },
+        "pass": { "type": "integer", "minimum": 0 },
+        "warn": { "type": "integer", "minimum": 0 },
+        "fail": { "type": "integer", "minimum": 0 },
+        "error": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "kind", "state", "intakeApproved", "executionApproved", "digest", "installations", "audit", "promotion"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "kind": { "const": "skill" },
+          "state": { "const": "candidate" },
+          "intakeApproved": { "const": true },
+          "executionApproved": { "const": false },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "installations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["platform", "relativePath"],
+              "properties": {
+                "platform": { "enum": ["claude", "shared", "codex", "codex-plugin", "claude-plugin"] },
+                "relativePath": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repository", "revision", "relativePath"],
+            "properties": {
+              "repository": { "type": "string", "minLength": 1 },
+              "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+              "relativePath": { "type": "string" }
+            }
+          },
+          "audit": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["verdict", "critical", "high", "info", "filesScanned", "categories"],
+            "properties": {
+              "verdict": { "enum": ["PASS", "WARN", "FAIL", "ERROR"] },
+              "critical": { "type": "integer", "minimum": 0 },
+              "high": { "type": "integer", "minimum": 0 },
+              "info": { "type": "integer", "minimum": 0 },
+              "filesScanned": { "type": "integer", "minimum": 0 },
+              "categories": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+              "error": { "type": "string" }
+            }
+          },
+          "promotion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["manualReviewRequired", "blockers"],
+            "properties": {
+              "manualReviewRequired": { "const": true },
+              "blockers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+            }
+          }
+        }
+      }
+    }
+  }
+}

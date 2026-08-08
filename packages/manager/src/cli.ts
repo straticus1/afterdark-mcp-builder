@@ -17,6 +17,7 @@ import { syncCommand } from "./commands/sync.js";
 import { catalogCommand } from "./commands/catalog.js";
 import { serveCommand } from "./commands/serve.js";
 import { daemonStatus, startDaemon, stopDaemon } from "./commands/daemon.js";
+import { inventorySkillsCommand } from "./commands/skills.js";
 import { ALL_TEMPLATES } from "./templates/index.js";
 
 const program = new Command();
@@ -264,5 +265,15 @@ daemon.command("status").action(() => {
     ? `Gateway daemon running (PID ${record.pid}) at http://${record.host}:${record.port}/mcp`
     : "Gateway daemon is not running");
 });
+
+// ─── skills ─────────────────────────────────────────────────────────────────
+
+const skills = program.command("skills").description("Inspect platform skill compliance");
+skills.command("inventory [roots...]")
+  .description("Inventory installed skills without trusting or executing them")
+  .option("--json", "Emit machine-readable inventory")
+  .action((roots: string[], opts: { json?: boolean }) => {
+    inventorySkillsCommand(roots, { json: opts.json ?? false });
+  });
 
 program.parse(process.argv);

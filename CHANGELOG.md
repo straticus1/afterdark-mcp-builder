@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Regulated control-plane and restricted-client distribution architecture
+- Shared signed-artifact schema for MCP servers and agent skills
+- Fail-closed endpoint enforcement-policy schema
+- Threat model covering upstream, registry, skill, MCP, and endpoint risks
+- Read-only skill inventory with deterministic content digests and Git source evidence
+- Generated Claude/Codex skill candidate registry with digest-deduplicated static audits
+
+### Security
+- Local skill discovery never grants approval
+- Skills without cryptographically verified platform receipts remain unmanaged
+- Regulated clients are designed to deny upstream network installation and consume only signed internal artifacts by digest
+
 ## [0.1.0] - 2025-10-06
 
 ### Added

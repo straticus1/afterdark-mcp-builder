@@ -66,6 +66,11 @@ mcpm-py --help
 | `mcp-builder sync` | Push enabled servers → Claude Code `settings.json` |
 | `mcp-builder serve` | Aggregate enabled servers through one MCP endpoint |
 | `mcp-builder daemon start\|stop\|status` | Manage the local HTTP gateway daemon |
+| `mcp-builder skills inventory [roots...]` | Hash installed skills and report unmanaged content |
+
+Skill inventory is read-only. It never executes a skill and never treats local
+presence as approval. Until signed platform receipts are implemented, every
+discovered skill is reported as `unmanaged` or `unverified-receipt`.
 
 ### Global flags
 
